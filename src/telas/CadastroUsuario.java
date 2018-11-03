@@ -23,6 +23,7 @@ import java.awt.event.FocusEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import javax.swing.JComboBox;
 
 public class CadastroUsuario extends JDialog {
 	private JTextField txtNome;
@@ -31,13 +32,18 @@ public class CadastroUsuario extends JDialog {
 	private JPasswordField pwdSenha;
 	private JCheckBox chckbxAuditor;
 	private boolean consultaRealizada = false;
+	private JComboBox<String> cmbUsuario;
+	private JCheckBox chckbxUsurio;
+	private ConnectUsuario connUser = new ConnectUsuario();
+	private boolean wait = false;
+
 	public CadastroUsuario() {
 		createWindow();
 	}
 
 	private void createWindow(){
 
-		ConnectUsuario connUser = new ConnectUsuario();
+
 
 		setIconImage(Toolkit.getDefaultToolkit().getImage("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
 
@@ -65,7 +71,7 @@ public class CadastroUsuario extends JDialog {
 		getContentPane().add(lblUsuario);
 
 		chckbxAuditor = new JCheckBox("Auditor");
-		chckbxAuditor.setBounds(58, 272, 97, 23);
+		chckbxAuditor.setBounds(177, 271, 97, 23);
 		getContentPane().add(chckbxAuditor);
 
 		txtNome = new JTextField();
@@ -95,7 +101,7 @@ public class CadastroUsuario extends JDialog {
 		});
 
 		txtUsuario = new JTextField();
-		txtUsuario.setBounds(58, 156, 240, 20);
+		txtUsuario.setBounds(58, 156, 224, 20);
 		getContentPane().add(txtUsuario);
 		txtUsuario.setColumns(10);
 		txtUsuario.addFocusListener(new FocusAdapter() {
@@ -108,7 +114,7 @@ public class CadastroUsuario extends JDialog {
 		});
 
 		pwdSenha = new JPasswordField();
-		pwdSenha.setBounds(58, 209, 236, 20);
+		pwdSenha.setBounds(58, 209, 224, 20);
 		getContentPane().add(pwdSenha);
 		pwdSenha.setColumns(10);
 		pwdSenha.addFocusListener(new FocusAdapter() {
@@ -170,10 +176,10 @@ public class CadastroUsuario extends JDialog {
 			}
 		});
 
-		JButton btnLimpar = new JButton("Limpar");
-		btnLimpar.setBounds(248, 326, 89, 23);
-		getContentPane().add(btnLimpar);
-		btnLimpar.addActionListener(new ActionListener() {
+		JButton btnNovo = new JButton("Novo");
+		btnNovo.setBounds(248, 326, 89, 23);
+		getContentPane().add(btnNovo);
+		btnNovo.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -192,52 +198,38 @@ public class CadastroUsuario extends JDialog {
 			}
 		});
 
-		JButton btnConsultarEditar = new JButton("Consultar/Editar");
-		btnConsultarEditar.setBounds(51, 326, 134, 23);
-		getContentPane().add(btnConsultarEditar);
-		btnConsultarEditar.addActionListener(new ActionListener() {
+		cmbUsuario = new JComboBox<String>();
+		cmbUsuario.setBounds(309, 156, 228, 20);
+		getContentPane().add(cmbUsuario);
+
+		JButton btnLimpar = new JButton("Limpar");
+		btnLimpar.setBounds(58, 326, 89, 23);
+		getContentPane().add(btnLimpar);
+
+		chckbxUsurio = new JCheckBox("Usu\u00E1rio");
+		chckbxUsurio.setBounds(58, 271, 117, 23);
+		getContentPane().add(chckbxUsurio);
+
+		btnLimpar.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				limpar();
+			}
+		});
+
+
+		cmbUsuario.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if( txtUsuario.getText().trim().equals("")){
-					JOptionPane.showMessageDialog(null, "Necess\u00E1rio usu\u00E1rio para consultar/editar!");
-				}else if(txtUsuario.getText().equalsIgnoreCase("ADM")){
-					JOptionPane.showMessageDialog(null, "N\u00E3o \u00E9 poss\u00EDvel Consultar/Editar usu\u00E1rio ADM");
-					limpar();
-				}else if(String.valueOf(pwdSenha.getPassword()).trim().equals("")){
-
-					ArrayList<String> retornoConsulta = new ArrayList<String>();
-
-					try {
-						retornoConsulta = connUser.consultar(txtUsuario.getText());
-						if(!retornoConsulta.get(0).equals("S")){
-							JOptionPane.showMessageDialog(null, "Erro ao recuperar as informações!");
-						}else{
-
-								txtNome.setText(retornoConsulta.get(1));
-								txtUsuario.setText(retornoConsulta.get(2));
-								pwdSenha.setText(retornoConsulta.get(3));
-								if(retornoConsulta.get(4).equals("1")){
-									chckbxAuditor.setSelected(true);
-								}
-								txtEmail.setText(retornoConsulta.get(5));
-
-								txtUsuario.setEnabled(false);
-
-
-						}
-
-
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-						setConsultaRealizada(true);
-
-				}
+				if(!wait)
+					populaTelaClickCombo();
 			}
 		});
+
+
+
 		setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{txtNome, txtEmail, txtUsuario, pwdSenha, chckbxAuditor, btnSalvar, btnLimpar, btnCancelar, getContentPane(), lblNome, lblSenha, lblEmail, lblPermissao, lblUsuario}));
 		limpar();
 	}
@@ -251,6 +243,11 @@ public class CadastroUsuario extends JDialog {
 		txtUsuario.setEnabled(true);
 		setConsultaRealizada(false);
 		txtNome.requestFocus(true);
+		wait = true;
+		populaComboUsuario();
+		wait = false;
+		cmbUsuario.setSelectedIndex(0);
+		chckbxUsurio.setSelected(true);
 	}
 
 	private void setConsultaRealizada(boolean consultaRealizada){
@@ -259,5 +256,59 @@ public class CadastroUsuario extends JDialog {
 
 	private boolean isConsultaRealizada(){
 		return consultaRealizada;
+	}
+
+	private void populaTelaClickCombo(){
+		if( !cmbUsuario.getSelectedItem().equals("")){
+			ArrayList<String> retornoConsulta = new ArrayList<String>();
+
+			try {
+				retornoConsulta = connUser.consultar(cmbUsuario.getSelectedItem().toString());
+				if(!retornoConsulta.get(0).equals("S")){
+					JOptionPane.showMessageDialog(null, "Erro ao recuperar as informações!");
+				}else{
+
+						txtNome.setText(retornoConsulta.get(1));
+						txtUsuario.setText(retornoConsulta.get(2));
+						pwdSenha.setText(retornoConsulta.get(3));
+						if(retornoConsulta.get(4).equals("1")){
+							chckbxAuditor.setSelected(true);
+						}
+						txtEmail.setText(retornoConsulta.get(5));
+
+						txtUsuario.setEnabled(false);
+
+						chckbxUsurio.setSelected(true);
+
+
+				}
+
+
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+				setConsultaRealizada(true);
+
+		}
+	}
+
+	private void populaComboUsuario(){
+		ArrayList<String> retornoConsulta = new ArrayList<String>();
+		try {
+			retornoConsulta = connUser.populaComboUsuario();
+
+			if(!retornoConsulta.isEmpty())
+				cmbUsuario.removeAllItems();
+
+			for(String item : retornoConsulta){
+				cmbUsuario.addItem(item);
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

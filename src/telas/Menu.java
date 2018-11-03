@@ -50,6 +50,26 @@ public class Menu extends JFrame{
 
 				}
 			});
+
+			JMenuItem mntmDados = new JMenuItem("Dados");
+			mnCadastro.add(mntmDados);
+			mntmDados.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Dados dados = new Dados();
+					dados.setPreferredSize(new Dimension(541, 390));
+					dados.pack();
+					dados.setLocationRelativeTo(null);
+					dados.setVisible(true);
+
+				}
+			});
+
+
+
+
+
 		}
 
 		if(permissao <= 1){
@@ -68,7 +88,6 @@ public class Menu extends JFrame{
 			});
 		}
 
-		if(permissao <= 2){
 			JMenu mnAtas = new JMenu("Atas");
 			menuBar.add(mnAtas);
 
@@ -78,7 +97,11 @@ public class Menu extends JFrame{
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					// TODO Auto-generated method stub
+					CadastraAta ata = new CadastraAta(0);
+					ata.setPreferredSize(new Dimension(969, 649));
+					ata.pack();
+					ata.setLocationRelativeTo(null);
+					ata.setVisible(true);
 
 				}
 			});
@@ -89,14 +112,32 @@ public class Menu extends JFrame{
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					// TODO Auto-generated method stub
-
+					CadastraAta ata = new CadastraAta(1);
+					ata.setPreferredSize(new Dimension(969, 649));
+					ata.pack();
+					ata.setLocationRelativeTo(null);
+					ata.setVisible(true);
 				}
 			});
-		}
+
+			JMenuItem mntmGeraDoc = new JMenuItem("Gerar .doc");
+			mnAtas.add(mntmGeraDoc);
+			mntmGeraDoc.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					GeraDocAta doc = new GeraDocAta();
+					doc.setPreferredSize(new Dimension(482, 205));
+					doc.pack();
+					doc.setLocationRelativeTo(null);
+					doc.setVisible(true);
+				}
+			});
+
+
 
 		JLabel background=new JLabel(new ImageIcon("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
-        add(background);
+        getContentPane().add(background);
         background.setLayout(new FlowLayout());
 
 		setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);

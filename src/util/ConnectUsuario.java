@@ -50,6 +50,8 @@ public class ConnectUsuario {
 		try {
 			pst = (OraclePreparedStatement) conn.prepareStatement(sql);
 			pst.executeUpdate();
+			pst.close();
+			conn.close();
 			return true;
 		} catch (SQLException e) {
 			if(e.getErrorCode() == 1){
@@ -72,6 +74,8 @@ public class ConnectUsuario {
 		try {
 			pst = (OraclePreparedStatement) conn.prepareStatement(sql);
 			pst.executeUpdate();
+			pst.close();
+			conn.close();
 			return true;
 		} catch (SQLException e) {
 			if(e.getErrorCode() == 1){
@@ -94,13 +98,14 @@ public class ConnectUsuario {
 		try {
 			pst = (OraclePreparedStatement) conn.prepareStatement(sql);
 			pst.executeUpdate();
+			pst.close();
+			conn.close();
 			return true;
 		} catch (SQLException e) {
 			if(e.getErrorCode() == 1){
 				JOptionPane.showMessageDialog(null, "Usu\u00E1rio j\u00E1 existente!");
 				pst.close();
 				conn.close();
-
 			}else{
 				JOptionPane.showMessageDialog(null, "Erro ao atualizar os dados do usu\u00E1rio");
 				pst.close();
@@ -127,14 +132,49 @@ public class ConnectUsuario {
 					retornoConsulta.add(rs.getString(5));
 
 			}
+
+			pst.close();
+			conn.close();
+			rs.close();
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, "Erro ao carregar dados do usu\u00E1rio");
 			pst.close();
 			conn.close();
+			rs.close();
 			e.printStackTrace();
 		}
 
 
+		return retornoConsulta;
+	}
+
+	public ArrayList<String> populaComboUsuario() throws SQLException{
+		ArrayList<String> retornoConsulta = new ArrayList<String>();
+		conn = ConnectDB.Connect();
+		sql = "select usuario from usuario where usuario <> 'ADM' order by usuario";
+		try {
+			pst = (OraclePreparedStatement) conn.prepareStatement(sql);
+			rs = (OracleResultSet) pst.executeQuery();
+			int inserted = 0;
+			while(rs.next()){
+				if (inserted == 0){
+					retornoConsulta.add("");
+					retornoConsulta.add(rs.getString(1));
+					inserted++;
+				}else{
+					retornoConsulta.add(rs.getString(1));
+				}
+			}
+			pst.close();
+			conn.close();
+			rs.close();
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, "Erro ao carregar dados do usu\u00E1rio");
+			pst.close();
+			conn.close();
+			rs.close();
+			e.printStackTrace();
+		}
 		return retornoConsulta;
 	}
 

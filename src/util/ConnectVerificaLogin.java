@@ -44,7 +44,7 @@ public class ConnectVerificaLogin {
 				sql = "update usuario_logado set status = 'N'";
 				pst = (OraclePreparedStatement) conn.prepareStatement(sql);
 				pst.executeUpdate();
-				sql = "insert into usuario_logado (usuario,status) values ('"+usuario+"','S')";
+				sql = "insert into usuario_logado (usuario,status, data) values ('"+usuario+"','S', sysdate)";
 				pst = (OraclePreparedStatement) conn.prepareStatement(sql);
 				pst.executeUpdate();
 				pst.close();
