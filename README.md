@@ -8,5 +8,5 @@ Contents
 Oracle connection and DML commands
 Class manipulation
 
-I don't what can I write more!!! kkk...
+I don't know what I can write more!!! kkk...
 ```
