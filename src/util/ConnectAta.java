@@ -93,9 +93,7 @@ public class ConnectAta {
 
 			if (rs.next()){
 				retornoConsulta.add(Integer.toString(rs.getInt(1)));
-				//Date d = new SimpleDateFormat("dd/MM/yyyy").parse((2));
-				date = new SimpleDateFormat("dd/MM/yyyy").format(rs.getDate(2));
-				retornoConsulta.add(date);
+				retornoConsulta.add(new SimpleDateFormat("dd/MM/yyyy").format(rs.getDate(2)));
 				retornoConsulta.add(rs.getString(3));
 				retornoConsulta.add(rs.getString(4));
 

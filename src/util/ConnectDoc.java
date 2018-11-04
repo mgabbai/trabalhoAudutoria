@@ -5,10 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import javax.swing.JOptionPane;
 
+import auxiliares.Doc;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 import word.api.interfaces.IDocument;
@@ -26,7 +29,11 @@ public class ConnectDoc {
 	private OraclePreparedStatement pst = null;
 	private OracleResultSet rs = null;
 	private String sql = null;
-	private String path;
+	private Doc doc = new Doc();
+	private boolean dadosHeader = false;
+	private boolean dadosAta = false;
+	private String ataAno = null;
+
 
 
 	public ConnectDoc(){
@@ -69,168 +76,179 @@ public class ConnectDoc {
 	    IDocument myDoc = new word.w2004.Document2004();
 	    myDoc.encoding(Document2004.Encoding.ISO8859_1); //or ISO8859-1. Default is UTF-8
 
-	    String sql = "";
-
+	    sql = "select nome_resumido,nome,endereco,estado,municipio,telefone,email,site,cnpj from dados";
 
 	    conn = ConnectDB.Connect();
 	    try {
 	        pst = (OraclePreparedStatement) conn.prepareStatement(sql);
-	        //pst.setString(1, user_id.getText());
 	        rs = (OracleResultSet) pst.executeQuery();
 
-	    } catch (Exception e) {
-	        JOptionPane.showMessageDialog(null, e);
-	    }// FIM TRY-CATCH CONECÇÃO
-
-	    /*
-	    1 - NOME_FUNCIONALIDADE
-	    2 - COD_CHAMADO
-	    3 - DESCRICAO
-	    4 - IMPACTOS
-	    5 - DESCR_CATEG
-	    6 - NOME_BASELINE
-	    7 - INCIDENTE
-	    8 - TEM_TEST_CASE
-	    9 - TC_PRECONDICOES // CASO HOUVER TEST CASE
-	    10 - TC_PASSOS // CASO HOUVER TEST CASE
-	    11 - TC_RESULTADO // CASO HOUVER TEST CASE
-
-	     */
-	    int head = 0, tem_reg = 0, ja_fui = 0, testCaseOK = 0;
-	    ParagraphPiece produto_nome  = ParagraphPiece.with(nome_produto).withStyle().bold().fontSize("16").underline().create();
-	    myDoc.getHeader().addEle(Paragraph.withPieces(produto_nome).create());
-	    while (rs.next()) {
-	        contagem++;
-	        if (tem_reg == 0){
-	            tem_reg = 1;
-	        }
-
-	        chamado.titulo = rs.getString(1);
-	        //chamado.nrm="RM " + rs.getString(0);
-	        chamado.impacto = rs.getString(4);
-	        if (chamado.impacto == null) {
-	            chamado.impacto = "N/A";
-	        }
-	        chamado.descricao = rs.getString(3);
-	        if (chamado.descricao == null) {
-	            chamado.descricao = "N/A";
-	        }
-
-	        chamado.categoria = rs.getString(5);
-	        String incidente = rs.getString(7);
-
-	        if (incidente == null) {
-	            chamado.nrm = "RM " + rs.getString(2);
-	        } else {
-	            chamado.nrm = "RM " + rs.getString(2) + " / Incidente " + incidente;
-	        }
-
-	        chamado.temTestCase = rs.getInt(8);
-
-	        if (chamado.temTestCase > 0){
-
-	            chamado.precondicoes = rs.getString(9);
-	            chamado.passos = rs.getString(10);
-	            chamado.resultado = rs.getString(11);
-	            testCaseOK = 1;
-
-	        }
-
-	        ParagraphPiece categoria  = ParagraphPiece.with(chamado.categoria).withStyle().bold().fontSize("13").create();
-	        ParagraphPiece titulo = ParagraphPiece.with(chamado.titulo).withStyle().bold().fontSize("12").textColor("ffffff").create();
-	        ParagraphPiece nRM = ParagraphPiece.with(chamado.nrm).withStyle().fontSize("12").bold().textColor("808080").create();
-	        ParagraphPiece head_desc = ParagraphPiece.with(chamado.titulo_descricao).withStyle().smallCaps().fontSize("11").bold().textColor("808080").create();
-	        ParagraphPiece descricao = ParagraphPiece.with(chamado.descricao).withStyle().fontSize("12").textColor("808080").create();
-	        ParagraphPiece head_impa = ParagraphPiece.with(chamado.titulo_impacto).withStyle().textColor("808080").fontSize("11").bold().smallCaps().create();
-	        ParagraphPiece impacto = ParagraphPiece.with(chamado.impacto).withStyle().textColor("808080").fontSize("12").create();
-	        ParagraphPiece head_precond = ParagraphPiece.with(chamado.titulo_precond).withStyle().textColor("808080").fontSize("11").bold().smallCaps().create();
-	        ParagraphPiece precond = ParagraphPiece.with(chamado.precondicoes).withStyle().textColor("808080").fontSize("12").create();
-	        ParagraphPiece head_passos = ParagraphPiece.with(chamado.titulo_passos).withStyle().textColor("808080").fontSize("11").bold().smallCaps().create();
-	        ParagraphPiece passos = ParagraphPiece.with(chamado.passos).withStyle().textColor("808080").fontSize("12").create();
-	        ParagraphPiece head_result = ParagraphPiece.with(chamado.titulo_result).withStyle().textColor("808080").fontSize("11").bold().smallCaps().create();
-	        ParagraphPiece result = ParagraphPiece.with(chamado.resultado).withStyle().textColor("808080").fontSize("12").create();
-	        ParagraphPiece titulo_testcase = ParagraphPiece.with(chamado.titulo_testCase).withStyle().textColor("808080").fontSize("14").bold().underline().smallCaps().create();
-
-
-
-	        if (chamado.categoria.equals("Customização") && head == 0){
-
-	           myDoc.addEle(Heading2.with(chamado.categoria).create());
-	           myDoc.addEle(BreakLine.times(1).create());
-
-	           head = 1;
-
-	        }else if (chamado.categoria.equals("Evolução Legal") && head == 1 || head == 0){
-
-	            myDoc.addEle(Heading2.with(chamado.categoria).create());
-	            myDoc.addEle(BreakLine.times(1).create());
-
-	            head = 2;
-
-	        } else if (chamado.categoria.equals("Plano de Produto") && head == 2 || head == 0 || head == 1){
-
-	            myDoc.addEle(Heading2.with(chamado.categoria).create());
-	            myDoc.addEle(BreakLine.times(1).create());
-
-	            head = 3;
-
-	        } else if (ja_fui == 0 && chamado.categoria.equals("Problema de Produto") && head == 3 || head == 0 || head == 1 || head == 2){
-
-	            myDoc.addEle(Heading2.with(chamado.categoria).create());
-	            myDoc.addEle(BreakLine.times(1).create());
-
-	            head = 4;
-	            ja_fui = 1;
-
-	        }
-	        myDoc.addEle(Paragraph.withPieces(titulo).withStyle().bgColor("808080").create());
-	        myDoc.addEle(BreakLine.times(2).create());
-
-	        myDoc.addEle(Paragraph.withPieces(nRM).withStyle().bgColor("DCDCDC").create());
-	        myDoc.addEle(BreakLine.times(2).create());
-
-	        myDoc.addEle(Paragraph.withPieces(head_desc).withStyle().indent(ParagraphStyle.Indent.ONE).create());
-	        myDoc.addEle(BreakLine.times(1).create());
-
-	        myDoc.addEle(Paragraph.withPieces(descricao).withStyle().indent(ParagraphStyle.Indent.TWO).align(ParagraphStyle.Align.JUSTIFIED).create());
-	        myDoc.addEle(BreakLine.times(1).create());
-
-	        myDoc.addEle(Paragraph.withPieces(head_impa).withStyle().indent(ParagraphStyle.Indent.ONE).create());
-	        myDoc.addEle(BreakLine.times(1).create());
-
-	        myDoc.addEle(Paragraph.withPieces(impacto).withStyle().indent(ParagraphStyle.Indent.TWO).align(ParagraphStyle.Align.JUSTIFIED).create());
-
-	        if (testCaseOK == 1){
-
-	            myDoc.addEle(BreakLine.times(1).create());
-
-	            myDoc.addEle(Paragraph.withPieces(titulo_testcase).withStyle().indent(ParagraphStyle.Indent.ONE).create());
-	            myDoc.addEle(BreakLine.times(1).create());
-	            myDoc.addEle(Paragraph.withPieces(head_precond).withStyle().indent(ParagraphStyle.Indent.ONE).create());
-	            myDoc.addEle(Paragraph.withPieces(precond).withStyle().indent(ParagraphStyle.Indent.TWO).align(ParagraphStyle.Align.JUSTIFIED).create());
-	            myDoc.addEle(BreakLine.times(1).create());
-
-	            myDoc.addEle(Paragraph.withPieces(head_passos).withStyle().indent(ParagraphStyle.Indent.ONE).create());
-	            myDoc.addEle(Paragraph.withPieces(passos).withStyle().indent(ParagraphStyle.Indent.TWO).align(ParagraphStyle.Align.JUSTIFIED).create());
-	            myDoc.addEle(BreakLine.times(1).create());
-
-	            myDoc.addEle(Paragraph.withPieces(head_result).withStyle().indent(ParagraphStyle.Indent.ONE).create());
-	            myDoc.addEle(Paragraph.withPieces(result).withStyle().indent(ParagraphStyle.Indent.TWO).align(ParagraphStyle.Align.JUSTIFIED).create());
-	            myDoc.addEle(BreakLine.times(2).create());
-
-	            testCaseOK = 0;
-
+	        if(rs.next()){
+	        	doc.setNomeResumido((rs.getString(1).trim().equals("")? "": rs.getString(1)));
+	        	doc.setNome((rs.getString(2).trim().equals("")? "" : rs.getString(2)));
+	        	doc.setEndereco((rs.getString(3).trim().equals("")? "" : rs.getString(3)));
+	        	doc.setEstado((rs.getString(4).trim().equals("")? "" : rs.getString(4)));
+	        	doc.setMunicipio((rs.getString(5).trim().equals("")? "" : rs.getString(5)));
+	        	doc.setTelefone((rs.getString(6).trim().equals("")? "" : rs.getString(6)));
+	        	doc.setEmail((rs.getString(7).trim().equals("")? "" : rs.getString(7)));
+	        	doc.setSite((rs.getString(8).trim().equals("")? "" : rs.getString(8)));
+	        	doc.setCnpj((rs.getString(9).trim().equals("")? "" : rs.getString(9)));
+	        	setDadosHeader(true);
 	        }else{
-
-	            myDoc.addEle(BreakLine.times(2).create());
-
+	        	setDadosHeader(false);
 	        }
 
-	    } // FIM WHILE RS.NEXT
+	        conn.close();
+	        rs.close();
+	        pst.close();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 
-	    if (tem_reg == 1){
-	        File fileObj = new File( RN_Tela.caminho +"RN_"+produto+".doc");
+	    try {
+			conn = ConnectDB.Connect();
+			sql = "select data, conteudo, presentes from atas where id_ata = '"+numeroAta+"'";
 
+			pst = (OraclePreparedStatement) conn.prepareStatement(sql);
+			rs = (OracleResultSet) pst.executeQuery();
+
+			if(rs.next()){
+				doc.setDataAta(new SimpleDateFormat("EEEE, dd 'de' MMMM 'de' yyyy").format(rs.getDate(1)));
+				ataAno = new SimpleDateFormat("yyyy").format(rs.getDate(1));
+				doc.setConteudoAta(rs.getString(2));
+				doc.setPresentesAta(rs.getString(3));
+				setDadosAta(true);
+			}else{
+				setDadosAta(false);
+			}
+
+			 conn.close();
+		     rs.close();
+		     pst.close();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
+	    if(isDadosHeader()){
+
+	    	ParagraphPiece nome  = ParagraphPiece.with(doc.getNome()).withStyle().bold().caps().fontSize("14").create();
+	        ParagraphPiece nomeResumido = ParagraphPiece.with(doc.getNomeResumido()).withStyle().bold().caps().fontSize("14").create();
+	        ParagraphPiece nomeNomeResumido = ParagraphPiece.with(doc.getNome()+" - " + doc.getNomeResumido()).withStyle().bold().caps().fontSize("14").create();
+	        ParagraphPiece endereco = ParagraphPiece.with(doc.getEndereco()).withStyle().fontSize("11").create();
+	        ParagraphPiece estado = ParagraphPiece.with(doc.getEstado()).withStyle().smallCaps().fontSize("11").create();
+	        ParagraphPiece enderecoMunicipioEstado = ParagraphPiece.with(doc.getEndereco() + ", " + doc.getMunicipio() + " - " + doc.getEstado()).withStyle().smallCaps().fontSize("11").create();
+	        ParagraphPiece municipio = ParagraphPiece.with(doc.getMunicipio()).withStyle().fontSize("11").create();
+	        ParagraphPiece municipioEstado = ParagraphPiece.with(doc.getMunicipio() + " - " + doc.getEstado()).withStyle().fontSize("11").create();
+	        ParagraphPiece enderecoMunicipio = ParagraphPiece.with(doc.getEndereco() + ", " + doc.getMunicipio()).withStyle().fontSize("11").create();
+	        ParagraphPiece telefone = ParagraphPiece.with(doc.getTelefone()).withStyle().fontSize("11").create();
+	        ParagraphPiece email = ParagraphPiece.with(doc.getEmail()).withStyle().fontSize("11").create();
+	        ParagraphPiece telefoneEmail = ParagraphPiece.with(doc.getTelefone() + " - " + doc.getEmail()).withStyle().fontSize("11").create();
+	        ParagraphPiece site = ParagraphPiece.with(doc.getSite()).withStyle().fontSize("11").create();
+	        ParagraphPiece cnpj = ParagraphPiece.with("CNPJ: " + doc.getCnpj()).withStyle().fontSize("11").create();
+	        ParagraphPiece siteCnpj = ParagraphPiece.with(doc.getSite() + ", CNPJ: " + doc.getCnpj()).withStyle().fontSize("11").create();
+
+
+	        if(!doc.getNome().trim().equals("")){
+	        	if(!doc.getNomeResumido().trim().equals("")){
+	        		myDoc.getHeader().addEle(Paragraph.withPieces(nomeNomeResumido).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}else{
+	        		myDoc.getHeader().addEle(Paragraph.withPieces(nome).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}
+	        }else{
+	        	if(!doc.getNomeResumido().trim().equals("")){
+		        	myDoc.getHeader().addEle(Paragraph.withPieces(nomeResumido).withStyle().align(ParagraphStyle.Align.CENTER).create());
+		        }
+	        }
+
+	        if(!doc.getEndereco().trim().equals("")){
+	        	if(!doc.getMunicipio().trim().equals("")){
+	        		if(!doc.getEstado().trim().equals("")){
+		        		myDoc.getHeader().addEle(Paragraph.withPieces(enderecoMunicipioEstado).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        		}else{
+		        		myDoc.getHeader().addEle(Paragraph.withPieces(enderecoMunicipio).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        		}
+	        	}else{
+		        	myDoc.getHeader().addEle(Paragraph.withPieces(endereco).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}
+	        }else{
+	        	if(!doc.getMunicipio().trim().equals("")){
+	        		if(!doc.getEstado().trim().equals("")){
+		        		myDoc.getHeader().addEle(Paragraph.withPieces(municipioEstado).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        		}else{
+		        		myDoc.getHeader().addEle(Paragraph.withPieces(municipio).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        		}
+	        	}else{
+	        		if(!doc.getEstado().trim().equals("")){
+		        		myDoc.getHeader().addEle(Paragraph.withPieces(estado).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        		}
+	        	}
+	        }
+
+
+	        if(!doc.getTelefone().trim().equals("")){
+	        	if(!doc.getEmail().trim().equals("")){
+	        		myDoc.getHeader().addEle(Paragraph.withPieces(telefoneEmail).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}else{
+		        	myDoc.getHeader().addEle(Paragraph.withPieces(telefone).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}
+	        }else{
+	        	if(!doc.getEmail().trim().equals("")){
+	        		myDoc.getHeader().addEle(Paragraph.withPieces(email).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}
+	        }
+
+
+	       	if(!doc.getSite().trim().equals("")){
+	       		if(!doc.getCnpj().trim().equals("")){
+	        		myDoc.getHeader().addEle(Paragraph.withPieces(siteCnpj).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}else{
+	        		myDoc.getHeader().addEle(Paragraph.withPieces(site).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}
+	        }else{
+	        	if(!doc.getCnpj().trim().equals("")){
+	        		myDoc.getHeader().addEle(Paragraph.withPieces(cnpj).withStyle().align(ParagraphStyle.Align.CENTER).create());
+	        	}
+	        }
+
+	    }
+
+	    if(isDadosAta()){
+
+	    	ParagraphPiece conteudo  = ParagraphPiece.with(doc.getConteudoAta()).withStyle().fontSize("12").create();
+	        ParagraphPiece presentes = ParagraphPiece.with(doc.getPresentesAta()).withStyle().fontSize("12").create();
+	        ParagraphPiece dados = ParagraphPiece.with("ATA Nº0" + numeroAta +"/" + ataAno).withStyle().bold().fontSize("12").create();
+	        ParagraphPiece data = ParagraphPiece.with(doc.getDataAta()).withStyle().fontSize("12").create();
+	        ParagraphPiece dados2 = ParagraphPiece.with("Presentes na Reuni\u00E3o").withStyle().bold().fontSize("12").create();
+
+    		myDoc.addEle(BreakLine.times(2).create());
+
+
+	    	myDoc.addEle(Paragraph.withPieces(data).withStyle().align(ParagraphStyle.Align.RIGHT).create());
+
+	    	myDoc.addEle(BreakLine.times(2).create());
+
+	    	myDoc.addEle(Paragraph.withPieces(dados).withStyle().align(ParagraphStyle.Align.CENTER).create());
+
+	    	myDoc.addEle(BreakLine.times(2).create());
+
+	    	myDoc.addEle(Paragraph.withPieces(conteudo).withStyle()//.indent(ParagraphStyle.Indent.ONE)
+	    			.align(ParagraphStyle.Align.JUSTIFIED).create());
+
+	    	myDoc.addEle(BreakLine.times(2).create());
+
+	    	myDoc.addEle(Paragraph.withPieces(dados2).withStyle().align(ParagraphStyle.Align.JUSTIFIED).create());
+
+	    	myDoc.addEle(BreakLine.times(1).create());
+
+	    	myDoc.addEle(Paragraph.withPieces(presentes).withStyle()//.indent(ParagraphStyle.Indent.ONE)
+	    			.align(ParagraphStyle.Align.JUSTIFIED).create());
+
+	    }
+
+	    if (isDadosAta()){
+
+	        File fileObj = new File( path + File.separator +"ATA0"+numeroAta+".doc");
 	        PrintWriter writer = null;
 
 	        try {
@@ -244,7 +262,23 @@ public class ConnectDoc {
 	        writer.println(myword);
 	        writer.close();
 	    }
-	} // fim method imprime
+	}
 
+
+	private void setDadosHeader(boolean dadosHeader){
+		this.dadosHeader = dadosHeader;
+	}
+
+	private boolean isDadosHeader(){
+		return dadosHeader;
+	}
+
+	private void setDadosAta(boolean dadosAta){
+		this.dadosAta = dadosAta;
+	}
+
+	private boolean isDadosAta(){
+		return dadosAta;
+	}
 
 }

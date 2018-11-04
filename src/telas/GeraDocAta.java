@@ -90,7 +90,19 @@ public class GeraDocAta extends JDialog{
 	}
 
 	private void geraAta(){
-		doc.geraDoc(cmbNumeroAta.getSelectedItem(), txtDiretorio.getText());
+		doc.geraDoc(cmbNumeroAta.getSelectedItem().toString(), path(txtDiretorio.getText()));
 		iniciaComponents();
+	}
+
+	private String path(String path){
+
+		path = path.replace("\\", File.separator);
+		path = path.replace("/", File.separator);
+
+		if(path.endsWith(File.separator)){
+			path = path.substring(0, path.length()-1);
+		}
+
+		return path;
 	}
 }
