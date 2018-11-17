@@ -35,13 +35,13 @@ public class Login extends JFrame{
 	private JButton btnOk;
 
 	public Login() {
-		setIconImage(Toolkit.getDefaultToolkit().getImage("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
 		createWindow();
 	}
 
 	private void createWindow(){
 
 		setResizable(false);
+		setIconImage(Toolkit.getDefaultToolkit().getImage("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
 
 		JLabel lblUsurio = new JLabel("Usu\u00E1rio");
 
@@ -113,13 +113,13 @@ public class Login extends JFrame{
 							txtUsuario.setText("");
 							pwdSenha.setText("");
 							txtUsuario.requestFocus();
-							setCursor(Cursor.getDefaultCursor());
+
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
-						setCursor(Cursor.getDefaultCursor());
 					}
 
+					setCursor(Cursor.getDefaultCursor());
 
 				}
 			}

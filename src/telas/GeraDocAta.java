@@ -1,9 +1,8 @@
 package telas;
 
-import javax.swing.JFrame;
 import javax.swing.JButton;
-import javax.swing.JTable;
-import java.awt.Color;
+
+import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,21 +17,28 @@ import javax.swing.JTextField;
 import util.ConnectDoc;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 public class GeraDocAta extends JDialog{
 	private JTextField txtDiretorio;
 	private JComboBox<String> cmbNumeroAta;
 	private JButton btnGerar;
 	private ConnectDoc doc = new ConnectDoc();
-	public GeraDocAta() {
+	private boolean alterouCaminho = false;
+	private boolean inseriuCaminho = false;
+	private String retorno;
+	public GeraDocAta(Menu parent, boolean modal) {
+		super(parent, modal);
 		createWindow();
 
 	}
 
 	public void createWindow(){
-		setIconImage(Toolkit.getDefaultToolkit().getImage("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
 
+		setIconImage(Toolkit.getDefaultToolkit().getImage("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
+		setResizable(false);
 		getContentPane().setLayout(null);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
 		JLabel lblNumroAta = new JLabel("Num\u00E9ro Ata");
 		lblNumroAta.setBounds(10, 11, 93, 14);
@@ -50,6 +56,17 @@ public class GeraDocAta extends JDialog{
 		txtDiretorio.setBounds(10, 83, 446, 20);
 		getContentPane().add(txtDiretorio);
 		txtDiretorio.setColumns(10);
+		txtDiretorio.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(retorno.equals(txtDiretorio.getText()))
+					setAlterouCaminho(true);
+				else
+					setAlterouCaminho(false);
+
+			}
+		});
 
 		btnGerar = new JButton("Gerar");
 		btnGerar.setBounds(185, 114, 89, 23);
@@ -58,8 +75,9 @@ public class GeraDocAta extends JDialog{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				geraAta();
-
+				setCursor(Cursor.getDefaultCursor());
 			}
 		});
 
@@ -67,8 +85,26 @@ public class GeraDocAta extends JDialog{
 	}
 
 	private void iniciaComponents(){
-		txtDiretorio.setText("C:"+File.separator+"temp");
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		retorno = doc.getPath();
+
+		if(retorno.trim().equals("")){
+			String caminho = null;
+			caminho = JOptionPane.showInputDialog("Sem cadastro de caminho para salvar arquivo gerado, por favor digite o caminho desejado:");
+
+			if(caminho.trim().equals("")){
+				dispose();
+			}else{
+				txtDiretorio.setText(caminho);
+				setInseriuCaminho(true);
+			}
+
+		}else{
+			txtDiretorio.setText(retorno);
+			setInseriuCaminho(false);
+		}
 		populaComboNumeroAta();
+		setCursor(Cursor.getDefaultCursor());
 	}
 
 	private void populaComboNumeroAta(){
@@ -90,8 +126,17 @@ public class GeraDocAta extends JDialog{
 	}
 
 	private void geraAta(){
-		doc.geraDoc(cmbNumeroAta.getSelectedItem().toString(), path(txtDiretorio.getText()));
-		iniciaComponents();
+		try{
+			if(cmbNumeroAta.getSelectedItem().toString().trim().equals("")){
+				JOptionPane.showMessageDialog(this, "Necessário selecionar numero de Ata!");
+			}else{
+				doc.geraDoc(cmbNumeroAta.getSelectedItem().toString(), isInseriuCaminho(), isAlterouCaminho(), path(txtDiretorio.getText()));
+				iniciaComponents();
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	private String path(String path){
@@ -104,5 +149,21 @@ public class GeraDocAta extends JDialog{
 		}
 
 		return path;
+	}
+
+	private void setAlterouCaminho(boolean alterouCaminho){
+		this.alterouCaminho = alterouCaminho;
+	}
+
+	private boolean isAlterouCaminho(){
+		return alterouCaminho;
+	}
+
+	private void setInseriuCaminho(boolean inseriuCaminho){
+		this.inseriuCaminho = inseriuCaminho;
+	}
+
+	private boolean isInseriuCaminho(){
+		return inseriuCaminho;
 	}
 }

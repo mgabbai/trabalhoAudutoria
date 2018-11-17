@@ -1,7 +1,10 @@
 package util;
 
+import java.awt.Desktop;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -33,8 +36,6 @@ public class ConnectDoc {
 	private boolean dadosHeader = false;
 	private boolean dadosAta = false;
 	private String ataAno = null;
-
-
 
 	public ConnectDoc(){
 
@@ -71,7 +72,29 @@ public class ConnectDoc {
 		return retornoConsulta;
 	}
 
-	public void geraDoc(String numeroAta, String path){
+	public void geraDoc(String numeroAta, boolean inseriuCaminho, boolean  alterouCaminho, String path){
+
+		boolean executaAlteracao = false;
+
+		if(inseriuCaminho){
+			sql = "insert into caminho_impressao (usuario, caminho)values((select usuario from usuario_logado where status = 'S'), '"+path+"')";
+			executaAlteracao = true;
+		}else if(alterouCaminho){
+			sql = "update caminho_impressao set usuario = (select usuario from usuario_logado where status = 'S'), caminho = "+path+"')";
+			executaAlteracao = true;
+		}
+
+		if(executaAlteracao){
+			try {
+				 pst = (OraclePreparedStatement) conn.prepareStatement(sql);
+			     pst.executeUpdate();
+			     pst.close();
+			     conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
 
 	    IDocument myDoc = new word.w2004.Document2004();
 	    myDoc.encoding(Document2004.Encoding.ISO8859_1); //or ISO8859-1. Default is UTF-8
@@ -261,9 +284,46 @@ public class ConnectDoc {
 
 	        writer.println(myword);
 	        writer.close();
+
+	        String[] option = {"Sim", "Não", "Cancelar"};
+
+	        int answer = JOptionPane.showOptionDialog(null, "Ata gerada com sucesso, deseja abri-la?", "Finalizado",
+	                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
+	                null, option, null);
+
+	        if(answer == 0){
+	        	Desktop desktop = Desktop.getDesktop();
+	        	try {
+	        		if(fileObj.exists())
+	        			desktop.open(fileObj);
+	        		else
+	        			throw new IOException("Erro ao abrir arquivo");
+				} catch (IOException e) {
+					JOptionPane.showMessageDialog(null, "Falha ao Abrir o Arquivo!");
+					e.printStackTrace();
+				}
+	        }
 	    }
 	}
 
+
+	public String getPath(){
+		conn = ConnectDB.Connect();
+		sql = "select caminho from caminho_impressao where usuario = (select usuario from usuario_logado where status = 'S')";
+
+		try {
+			pst = (OraclePreparedStatement) conn.prepareStatement(sql);
+			rs = (OracleResultSet) pst.executeQuery();
+
+			if(rs.next())
+				return rs.getString(1);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return "";
+	}
 
 	private void setDadosHeader(boolean dadosHeader){
 		this.dadosHeader = dadosHeader;
@@ -280,5 +340,7 @@ public class ConnectDoc {
 	private boolean isDadosAta(){
 		return dadosAta;
 	}
+
+
 
 }

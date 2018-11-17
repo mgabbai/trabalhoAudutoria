@@ -5,16 +5,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
-import java.awt.BorderLayout;
 import javax.swing.JTextField;
-import javax.swing.JCheckBox;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import util.ConnectUsuario;
 
 import java.awt.Component;
-import java.awt.List;
+import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,29 +23,30 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.JComboBox;
+import javax.swing.JRadioButton;
 
 public class CadastroUsuario extends JDialog {
 	private JTextField txtNome;
 	private JTextField txtEmail;
 	private JTextField txtUsuario;
 	private JPasswordField pwdSenha;
-	private JCheckBox chckbxAuditor;
 	private boolean consultaRealizada = false;
 	private JComboBox<String> cmbUsuario;
-	private JCheckBox chckbxUsurio;
 	private ConnectUsuario connUser = new ConnectUsuario();
 	private boolean wait = false;
+	private JRadioButton rdbtnUsurio;
+	private JRadioButton rdbtnAuditor;
+	private ButtonGroup group;
 
-	public CadastroUsuario() {
+	public CadastroUsuario(Menu parent, boolean modal) {
+		super(parent, modal);
 		createWindow();
 	}
 
 	private void createWindow(){
 
-
-
 		setIconImage(Toolkit.getDefaultToolkit().getImage("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
-
+		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 
@@ -69,10 +69,6 @@ public class CadastroUsuario extends JDialog {
 		JLabel lblUsuario = new JLabel("Usu\u00E1rio *");
 		lblUsuario.setBounds(58, 131, 66, 14);
 		getContentPane().add(lblUsuario);
-
-		chckbxAuditor = new JCheckBox("Auditor");
-		chckbxAuditor.setBounds(177, 271, 97, 23);
-		getContentPane().add(chckbxAuditor);
 
 		txtNome = new JTextField();
 		txtNome.setBounds(58, 48, 479, 20);
@@ -136,9 +132,10 @@ public class CadastroUsuario extends JDialog {
 				if (txtNome.getText().trim().equals("")||txtUsuario.getText().trim().equals("")||String.valueOf(pwdSenha.getPassword()).trim().equals("")){
 					JOptionPane.showMessageDialog(null, "Necess\u00E1rio preencher todos os campos obrigat\u00F3ios");
 				}else{
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					int permissao;
 					boolean ok = false;
-					if(chckbxAuditor.isSelected())
+					if(rdbtnAuditor.isSelected())
 						permissao = 1;
 					else
 						permissao = 2;
@@ -161,6 +158,8 @@ public class CadastroUsuario extends JDialog {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+
+					setCursor(Cursor.getDefaultCursor());
 
 					if(ok){
 						JOptionPane.showMessageDialog(null, "Registros inseridos/atualizados com sucesso!");
@@ -206,9 +205,18 @@ public class CadastroUsuario extends JDialog {
 		btnLimpar.setBounds(58, 326, 89, 23);
 		getContentPane().add(btnLimpar);
 
-		chckbxUsurio = new JCheckBox("Usu\u00E1rio");
-		chckbxUsurio.setBounds(58, 271, 117, 23);
-		getContentPane().add(chckbxUsurio);
+		rdbtnUsurio = new JRadioButton("Usu\u00E1rio");
+		rdbtnUsurio.setBounds(58, 271, 109, 23);
+		getContentPane().add(rdbtnUsurio);
+
+		rdbtnAuditor = new JRadioButton("Auditor");
+		rdbtnAuditor.setBounds(177, 271, 109, 23);
+		getContentPane().add(rdbtnAuditor);
+
+		group = new ButtonGroup();
+		group.add(rdbtnAuditor);
+		group.add(rdbtnUsurio);
+		group.clearSelection();
 
 		btnLimpar.addActionListener(new ActionListener() {
 
@@ -230,7 +238,7 @@ public class CadastroUsuario extends JDialog {
 
 
 
-		setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{txtNome, txtEmail, txtUsuario, pwdSenha, chckbxAuditor, btnSalvar, btnLimpar, btnCancelar, getContentPane(), lblNome, lblSenha, lblEmail, lblPermissao, lblUsuario}));
+		setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{txtNome, txtEmail, txtUsuario, pwdSenha, rdbtnAuditor, btnSalvar, btnLimpar, btnCancelar, getContentPane(), lblNome, lblSenha, lblEmail, lblPermissao, lblUsuario}));
 		limpar();
 	}
 
@@ -239,15 +247,15 @@ public class CadastroUsuario extends JDialog {
 		txtNome.setText("");
 		txtUsuario.setText("");
 		pwdSenha.setText("");
-		chckbxAuditor.setSelected(false);
 		txtUsuario.setEnabled(true);
 		setConsultaRealizada(false);
 		txtNome.requestFocus(true);
 		wait = true;
 		populaComboUsuario();
 		wait = false;
-		cmbUsuario.setSelectedIndex(0);
-		chckbxUsurio.setSelected(true);
+		if(cmbUsuario.getItemCount()>0)
+			cmbUsuario.setSelectedIndex(0);
+		group.clearSelection();
 	}
 
 	private void setConsultaRealizada(boolean consultaRealizada){
@@ -259,6 +267,7 @@ public class CadastroUsuario extends JDialog {
 	}
 
 	private void populaTelaClickCombo(){
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		if( !cmbUsuario.getSelectedItem().equals("")){
 			ArrayList<String> retornoConsulta = new ArrayList<String>();
 
@@ -272,13 +281,15 @@ public class CadastroUsuario extends JDialog {
 						txtUsuario.setText(retornoConsulta.get(2));
 						pwdSenha.setText(retornoConsulta.get(3));
 						if(retornoConsulta.get(4).equals("1")){
-							chckbxAuditor.setSelected(true);
+							rdbtnAuditor.setSelected(true);
+						}else{
+							rdbtnUsurio.setSelected(true);
 						}
 						txtEmail.setText(retornoConsulta.get(5));
 
 						txtUsuario.setEnabled(false);
 
-						chckbxUsurio.setSelected(true);
+
 
 
 				}
@@ -292,9 +303,12 @@ public class CadastroUsuario extends JDialog {
 				setConsultaRealizada(true);
 
 		}
+
+		setCursor(Cursor.getDefaultCursor());
 	}
 
 	private void populaComboUsuario(){
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		ArrayList<String> retornoConsulta = new ArrayList<String>();
 		try {
 			retornoConsulta = connUser.populaComboUsuario();
@@ -310,5 +324,6 @@ public class CadastroUsuario extends JDialog {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		setCursor(Cursor.getDefaultCursor());
 	}
 }

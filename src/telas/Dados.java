@@ -9,8 +9,8 @@ import util.ConnectDados;
 
 import javax.swing.JComboBox;
 
+import java.awt.Cursor;
 import java.awt.Toolkit;
-import java.awt.color.CMMException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -32,15 +32,19 @@ public class Dados extends JDialog {
 	private JComboBox<String> cmbEstado;
 	private boolean telaCarregada = false;
 
-	public Dados() {
+	public Dados(Menu parent, boolean modal) {
+		super(parent, modal);
 		createWindow();
 	}
 
 	private void createWindow(){
+
 		getContentPane().setLayout(null);
 		setIconImage(Toolkit.getDefaultToolkit().getImage("." + File.separator + "src" + File.separator + "telas" + File.separator + "if_41-File-Document-process_3213319.png"));
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setResizable(false);
 
-		JLabel lblNome = new JLabel("Nome");
+		JLabel lblNome = new JLabel("Raz\u00E3o Social");
 		lblNome.setBounds(10, 11, 84, 14);
 		getContentPane().add(lblNome);
 
@@ -49,7 +53,7 @@ public class Dados extends JDialog {
 		getContentPane().add(txtNome);
 		txtNome.setColumns(10);
 
-		JLabel lblNomeResumido = new JLabel("Nome Resumido");
+		JLabel lblNomeResumido = new JLabel("Nome Fantasia");
 		lblNomeResumido.setBounds(10, 61, 104, 14);
 		getContentPane().add(lblNomeResumido);
 
@@ -144,6 +148,8 @@ public class Dados extends JDialog {
 					JOptionPane.showMessageDialog(null, "Necess\u00E1rio algum dos compos!");
 				}else{
 					boolean ok = false;
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					setCursor(Cursor.getDefaultCursor());
 
 					try {
 
@@ -178,7 +184,8 @@ public class Dados extends JDialog {
 	}
 
 	private void iniciaComponents(){
-		if(true){
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		setCursor(Cursor.getDefaultCursor());
 			ArrayList<String> retornoConsulta = new ArrayList<String>();
 
 			try {
@@ -212,12 +219,12 @@ public class Dados extends JDialog {
 				e.printStackTrace();
 			}
 
-
-		}
 	}
 
 
 	private void populaComboEstados(){
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		setCursor(Cursor.getDefaultCursor());
 		ArrayList<String> retornoConsulta = new ArrayList<String>();
 		try {
 			retornoConsulta = dados.populaComboEstados();
