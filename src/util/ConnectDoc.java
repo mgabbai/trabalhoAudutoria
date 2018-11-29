@@ -75,6 +75,7 @@ public class ConnectDoc {
 	public void geraDoc(String numeroAta, boolean inseriuCaminho, boolean  alterouCaminho, String path){
 
 		boolean executaAlteracao = false;
+		conn = ConnectDB.Connect();
 
 		if(inseriuCaminho){
 			sql = "insert into caminho_impressao (usuario, caminho)values((select usuario from usuario_logado where status = 'S'), '"+path+"')";
@@ -88,8 +89,8 @@ public class ConnectDoc {
 			try {
 				 pst = (OraclePreparedStatement) conn.prepareStatement(sql);
 			     pst.executeUpdate();
-			     pst.close();
 			     conn.close();
+			     pst.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -277,6 +278,7 @@ public class ConnectDoc {
 	        try {
 	            writer = new PrintWriter(fileObj);
 	        } catch (FileNotFoundException e) {
+	        	JOptionPane.showMessageDialog(null, "Erro ao gerar ata! \n\nCaso esteja regerando uma ata ja existente, verifique se ela nao esta aberta no sistema!");
 	            e.printStackTrace();
 	        }
 
@@ -284,6 +286,8 @@ public class ConnectDoc {
 
 	        writer.println(myword);
 	        writer.close();
+	        
+	        gerouAta(numeroAta);
 
 	        String[] option = {"Sim", "Não", "Cancelar"};
 
@@ -323,6 +327,23 @@ public class ConnectDoc {
 		}
 
 		return "";
+	}
+	
+	public void gerouAta(String numeroAta){
+		conn = ConnectDB.Connect();
+		sql = "insert into log(id,nome_tabela, usuario, evento, data_evento, comando) "
+			+ "values (seq_logs.nextval, 'ATAS', (select usuario from usuario_logado where status = 'S'), 'S',sysdate,"
+			+ "to_char('Ata numero: "+numeroAta+" gerada pelo usuario:' || (select usuario from usuario_logado where status = 'S')))";
+
+		try {
+			pst = (OraclePreparedStatement) conn.prepareStatement(sql);
+			pst.executeUpdate();
+		     
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	private void setDadosHeader(boolean dadosHeader){

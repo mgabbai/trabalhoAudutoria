@@ -84,10 +84,7 @@ public class Auditoria extends JDialog{
 			public void actionPerformed(ActionEvent e) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-				if(!txtDataInicio.getDateFormatString().equalsIgnoreCase(""))
 					setDataInicio(txtDataInicio.getDate());
-
-				if(!txtDataFim.getDateFormatString().equalsIgnoreCase(""))
 					setDataFim(txtDataFim.getDate());
 
 				createTable(auditoria.consultar(getContent()));
@@ -216,6 +213,19 @@ public class Auditoria extends JDialog{
 		chckbxSistema = new JCheckBox("Sistema");
 		chckbxSistema.setBounds(735, 63, 105, 23);
 		getContentPane().add(chckbxSistema);
+		
+		chckbxSistema.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				if(chckbxSistema.isSelected())
+					setSistema(true);
+				else
+					setSistema(false);
+
+			}
+		});
 
 		JLabel lblData = new JLabel("Data");
 		lblData.setBounds(337, 81, 46, 14);
@@ -376,6 +386,8 @@ public class Auditoria extends JDialog{
 		if(dateFormatString != null){
 			String date = new SimpleDateFormat("dd/MM/yyyy").format(dateFormatString);
 			dataFim = date;
+		}else{
+			dataFim = "";
 		}
 	}
 
@@ -383,6 +395,8 @@ public class Auditoria extends JDialog{
 		if(dateFormatString != null){
 			String date = new SimpleDateFormat("dd/MM/yyyy").format(dateFormatString);
 			dataInicio = date;
+		}else{
+			dataInicio = "";
 		}
 	}
 
@@ -443,9 +457,8 @@ public class Auditoria extends JDialog{
 		if(chckbxUpdate.isSelected())
 			chckbxUpdate.doClick();
 
-		txtDataInicio.setDateFormatString("");
-		txtDataFim.setDateFormatString("");
-
+		txtDataInicio.setCalendar(null);
+		txtDataFim.setCalendar(null);
 		clearTable();
 		table = new JTable();
 		table.setBounds(41, 160, 815, 361);
