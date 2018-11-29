@@ -9,7 +9,7 @@ public class ConnectDB {
 	public static Connection Connect(){
         try {
             Class.forName("oracle.jdbc.OracleDriver");
-            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@//localhost:1521/xe", "ata", "ata");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@//localhost:1521/xe", "atas", "atas");
             return con;
         } catch (ClassNotFoundException | SQLException e) {
             JOptionPane.showMessageDialog(null, e);

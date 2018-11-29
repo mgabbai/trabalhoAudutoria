@@ -1,22 +1,14 @@
 package telas;
 
 import javax.swing.JDialog;
-import javax.swing.JFormattedTextField;
-
 import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -31,16 +23,8 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.table.TableColumnModel;
-import javax.swing.text.DateFormatter;
-import javax.swing.text.DefaultFormatterFactory;
-import javax.swing.text.MaskFormatter;
-
-import org.jdatepicker.JDatePicker;
-
 import com.toedter.calendar.JDateChooser;
-import com.toedter.calendar.JTextFieldDateEditor;
 
-import javax.swing.JTextField;
 
 public class Auditoria extends JDialog{
 	private JTable table;
@@ -63,6 +47,8 @@ public class Auditoria extends JDialog{
 	private JCheckBox chckbxUpdate;
 	private JCheckBox chckbxDelete;
 	private JCheckBox chckbxSistema;
+	private String dataInicio = "";
+	private String dataFim = "";
 
 	public Auditoria(Menu parent, boolean modal) {
 		super(parent, modal);
@@ -98,10 +84,18 @@ public class Auditoria extends JDialog{
 			public void actionPerformed(ActionEvent e) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
+				if(!txtDataInicio.getDateFormatString().equalsIgnoreCase(""))
+					setDataInicio(txtDataInicio.getDate());
+
+				if(!txtDataFim.getDateFormatString().equalsIgnoreCase(""))
+					setDataFim(txtDataFim.getDate());
+
 				createTable(auditoria.consultar(getContent()));
 
 				setCursor(Cursor.getDefaultCursor());
 			}
+
+
 
 		});
 
@@ -376,6 +370,28 @@ public class Auditoria extends JDialog{
 
 	public String getUsuario(){
 		return this.usuarioSelecionado;
+	}
+
+	private void setDataFim(Date dateFormatString) {
+		if(dateFormatString != null){
+			String date = new SimpleDateFormat("dd/MM/yyyy").format(dateFormatString);
+			dataFim = date;
+		}
+	}
+
+	private void setDataInicio(Date dateFormatString) {
+		if(dateFormatString != null){
+			String date = new SimpleDateFormat("dd/MM/yyyy").format(dateFormatString);
+			dataInicio = date;
+		}
+	}
+
+	public String getDataFim(){
+		return this.dataFim;
+	}
+
+	public String getDataInicio(){
+		return this.dataInicio;
 	}
 
 	private void populaCombo(){

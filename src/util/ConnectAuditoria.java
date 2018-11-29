@@ -76,6 +76,18 @@ public class ConnectAuditoria {
 				where += " or nome_tabela  = '" +nomeTabelaTrigger+"'";
 		}
 
+		if (!audit.getDataInicio().trim().equals(""))
+			if(where.trim().equals(""))
+				where += " where data_evento >= to_date('"+audit.getDataInicio()+"', 'dd/MM/yyyy'))";
+			else
+				where += " or data_evento  >= to_date('"+audit.getDataInicio()+"', 'dd/MM/yyyy'))";
+
+		if (!audit.getDataFim().trim().equals(""))
+			if(where.trim().equals(""))
+				where += " where data_evento <= to_date('"+audit.getDataFim()+"', 'dd/MM/yyyy'))";
+			else
+				where += " or data_evento  <= to_date('"+audit.getDataFim()+"', 'dd/MM/yyyy'))";
+
 		sql += where;
 
 		try {
